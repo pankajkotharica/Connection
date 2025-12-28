@@ -1,0 +1,8 @@
+
+{
+  "name": "Nexus - Personal Networking Manager",
+  "description": "A sophisticated personal CRM for tracking professional connections, including details on professions, locations, and referrals, with AI-powered conversation starters.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
