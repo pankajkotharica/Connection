@@ -122,7 +122,7 @@ const App: React.FC = () => {
                 </button>
               )}
             </div>
-            <Button onClick={() => setIsFormOpen(true)} className="shrink-0">
+            <Button onClick={() => setIsFormOpen(true)} className="shrink-0 !bg-blue-600 hover:!bg-blue-700">
               <Plus className="w-4 h-4 md:mr-2" />
               <span className="hidden md:inline">Add Person</span>
             </Button>
