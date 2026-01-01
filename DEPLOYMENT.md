@@ -150,3 +150,4 @@ Your environment variables are securely stored in Vercel. To update them:
 - ⚠️ Your Supabase anon key is safe to expose in frontend code (it's designed for client-side use)
 - ⚠️ For production, consider adding authentication to restrict database access
 
+

@@ -69,3 +69,4 @@ After deployment:
 - Every git push to main will auto-deploy
 - Check build logs in Vercel dashboard if there are issues
 
+
