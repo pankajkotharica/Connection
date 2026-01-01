@@ -4,7 +4,7 @@ import { Contact } from './types';
 import { Button } from './components/Button';
 import { ContactCard } from './components/ContactCard';
 import { contactService } from './services/contactService';
-import { Plus, Search, X, Phone, MapPin, Users, Briefcase, ArrowLeft, User } from 'lucide-react';
+import { Plus, Search, X, Phone, MapPin, Users, Briefcase, ArrowLeft, User, Mail, Calendar } from 'lucide-react';
 
 const App: React.FC = () => {
   const [contacts, setContacts] = useState<Contact[]>([]);
@@ -15,10 +15,20 @@ const App: React.FC = () => {
 
   // Form State
   const [formData, setFormData] = useState<Partial<Contact>>({
-    name: '',
-    profession: '',
-    contactNumber: '',
-    area: '',
+    firstName: '',
+    lastName: '',
+    gender: '',
+    email: '',
+    phone: '',
+    age: undefined,
+    address: '',
+    city: '',
+    bhagCode: '',
+    occupation: '',
+    nagarCode: '',
+    bastiCode: '',
+    activation: 'Pending',
+    remark: '',
     referredBy: '',
   });
 
@@ -42,23 +52,38 @@ const App: React.FC = () => {
 
   const handleAddContact = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name || !formData.profession) return;
+    if (!formData.firstName || !formData.lastName || !formData.occupation || !formData.phone || !formData.city) return;
 
     try {
       const newContact = await contactService.create({
-        name: formData.name,
-        profession: formData.profession,
-        contactNumber: formData.contactNumber || '',
-        area: formData.area || '',
-        referredBy: formData.referredBy || '',
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        gender: formData.gender,
+        email: formData.email,
+        phone: formData.phone,
+        age: formData.age,
+        address: formData.address,
+        city: formData.city,
+        bhagCode: formData.bhagCode,
+        occupation: formData.occupation,
+        nagarCode: formData.nagarCode,
+        bastiCode: formData.bastiCode,
+        activation: formData.activation || 'Pending',
+        remark: formData.remark,
+        referredBy: formData.referredBy,
       });
 
       setContacts(prev => [newContact, ...prev]);
       setIsFormOpen(false);
-      setFormData({ name: '', profession: '', contactNumber: '', area: '', referredBy: '' });
+      // Reset form
+      setFormData({ 
+        firstName: '', lastName: '', gender: '', email: '', phone: '', 
+        age: undefined, address: '', city: '', bhagCode: '', occupation: '',
+        nagarCode: '', bastiCode: '', activation: 'Pending', remark: '', referredBy: ''
+      });
     } catch (error) {
-      console.error('Failed to create contact:', error);
-      alert('Failed to create contact. Please try again.');
+      console.error('Failed to create member:', error);
+      alert('Failed to create member. Please try again.');
     }
   };
 
@@ -83,11 +108,14 @@ const App: React.FC = () => {
     const query = searchQuery.toLowerCase().trim();
     if (!query) return contacts;
 
+    const fullName = (c: Contact) => `${c.firstName || ''} ${c.lastName || ''}`.trim().toLowerCase();
     return contacts.filter(c => 
-      c.name.toLowerCase().includes(query) || 
-      c.profession.toLowerCase().includes(query) ||
-      c.area.toLowerCase().includes(query) ||
-      c.referredBy.toLowerCase().includes(query)
+      fullName(c).includes(query) || 
+      (c.occupation || c.profession || '').toLowerCase().includes(query) ||
+      (c.city || c.area || '').toLowerCase().includes(query) ||
+      (c.referredBy || '').toLowerCase().includes(query) ||
+      (c.phone || c.contactNumber || '').toLowerCase().includes(query) ||
+      (c.email || '').toLowerCase().includes(query)
     );
   }, [contacts, searchQuery]);
 
@@ -146,34 +174,108 @@ const App: React.FC = () => {
               <div className="bg-white rounded-2xl p-4 sm:p-6 md:p-8 border border-gray-200 shadow-sm">
                 <div className="flex flex-col items-center text-center mb-6 sm:mb-8">
                   <div className="h-20 w-20 sm:h-24 sm:w-24 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-3xl sm:text-4xl font-bold mb-3 sm:mb-4 shadow-inner">
-                    {selectedContact.name.charAt(0)}
+                    {(selectedContact.firstName || selectedContact.name || 'U').charAt(0).toUpperCase()}
                   </div>
-                  <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">{selectedContact.name}</h2>
-                  <p className="text-gray-500 font-medium text-base sm:text-lg mt-2">{selectedContact.profession}</p>
+                  <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">
+                    {selectedContact.firstName && selectedContact.lastName 
+                      ? `${selectedContact.firstName} ${selectedContact.lastName}`
+                      : selectedContact.name || 'Unknown'}
+                  </h2>
+                  <p className="text-gray-500 font-medium text-base sm:text-lg mt-2">
+                    {selectedContact.occupation || selectedContact.profession || 'No occupation'}
+                  </p>
                 </div>
                 
                 <div className="space-y-4 sm:space-y-6 mb-6 sm:mb-8">
-                  <div className="flex items-start">
-                    <Phone className="w-5 h-5 text-indigo-500 mr-3 sm:mr-4 mt-0.5 shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs text-gray-400 uppercase font-bold tracking-wider mb-1">Contact</p>
-                      <p className="text-gray-900 text-base sm:text-lg break-words">{selectedContact.contactNumber || 'No number added'}</p>
+                  {(selectedContact.phone || selectedContact.contactNumber) && (
+                    <div className="flex items-start">
+                      <Phone className="w-5 h-5 text-indigo-500 mr-3 sm:mr-4 mt-0.5 shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs text-gray-400 uppercase font-bold tracking-wider mb-1">Phone</p>
+                        <p className="text-gray-900 text-base sm:text-lg break-words">{selectedContact.phone || selectedContact.contactNumber}</p>
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex items-start">
-                    <MapPin className="w-5 h-5 text-indigo-500 mr-3 sm:mr-4 mt-0.5 shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs text-gray-400 uppercase font-bold tracking-wider mb-1">Location</p>
-                      <p className="text-gray-900 text-base sm:text-lg break-words">{selectedContact.area || 'No area specified'}</p>
+                  )}
+                  {selectedContact.email && (
+                    <div className="flex items-start">
+                      <User className="w-5 h-5 text-indigo-500 mr-3 sm:mr-4 mt-0.5 shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs text-gray-400 uppercase font-bold tracking-wider mb-1">Email</p>
+                        <p className="text-gray-900 text-base sm:text-lg break-words">{selectedContact.email}</p>
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex items-start">
-                    <Users className="w-5 h-5 text-indigo-500 mr-3 sm:mr-4 mt-0.5 shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs text-gray-400 uppercase font-bold tracking-wider mb-1">Referral</p>
-                      <p className="text-gray-900 text-base sm:text-lg break-words">Met via <span className="font-semibold">{selectedContact.referredBy}</span></p>
+                  )}
+                  {(selectedContact.city || selectedContact.area) && (
+                    <div className="flex items-start">
+                      <MapPin className="w-5 h-5 text-indigo-500 mr-3 sm:mr-4 mt-0.5 shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs text-gray-400 uppercase font-bold tracking-wider mb-1">Location</p>
+                        <p className="text-gray-900 text-base sm:text-lg break-words">
+                          {selectedContact.address && `${selectedContact.address}, `}
+                          {selectedContact.city || selectedContact.area}
+                          {selectedContact.bhagCode && ` (BHAG: ${selectedContact.bhagCode})`}
+                        </p>
+                      </div>
                     </div>
-                  </div>
+                  )}
+                  {(selectedContact.nagarCode || selectedContact.bastiCode) && (
+                    <div className="flex items-start">
+                      <MapPin className="w-5 h-5 text-indigo-500 mr-3 sm:mr-4 mt-0.5 shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs text-gray-400 uppercase font-bold tracking-wider mb-1">Codes</p>
+                        <p className="text-gray-900 text-base sm:text-lg break-words">
+                          {selectedContact.nagarCode && `Nagar: ${selectedContact.nagarCode}`}
+                          {selectedContact.nagarCode && selectedContact.bastiCode && ' | '}
+                          {selectedContact.bastiCode && `Basti: ${selectedContact.bastiCode}`}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                  {selectedContact.gender && (
+                    <div className="flex items-start">
+                      <User className="w-5 h-5 text-indigo-500 mr-3 sm:mr-4 mt-0.5 shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs text-gray-400 uppercase font-bold tracking-wider mb-1">Gender</p>
+                        <p className="text-gray-900 text-base sm:text-lg break-words">{selectedContact.gender}</p>
+                      </div>
+                    </div>
+                  )}
+                  {selectedContact.age && (
+                    <div className="flex items-start">
+                      <User className="w-5 h-5 text-indigo-500 mr-3 sm:mr-4 mt-0.5 shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs text-gray-400 uppercase font-bold tracking-wider mb-1">Age</p>
+                        <p className="text-gray-900 text-base sm:text-lg break-words">{selectedContact.age} years</p>
+                      </div>
+                    </div>
+                  )}
+                  {selectedContact.activation && (
+                    <div className="flex items-start">
+                      <Briefcase className="w-5 h-5 text-indigo-500 mr-3 sm:mr-4 mt-0.5 shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs text-gray-400 uppercase font-bold tracking-wider mb-1">Activation Status</p>
+                        <p className="text-gray-900 text-base sm:text-lg break-words">{selectedContact.activation}</p>
+                      </div>
+                    </div>
+                  )}
+                  {selectedContact.referredBy && (
+                    <div className="flex items-start">
+                      <Users className="w-5 h-5 text-indigo-500 mr-3 sm:mr-4 mt-0.5 shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs text-gray-400 uppercase font-bold tracking-wider mb-1">Referral</p>
+                        <p className="text-gray-900 text-base sm:text-lg break-words">Met via <span className="font-semibold">{selectedContact.referredBy}</span></p>
+                      </div>
+                    </div>
+                  )}
+                  {(selectedContact.remark || selectedContact.notes) && (
+                    <div className="flex items-start">
+                      <Briefcase className="w-5 h-5 text-indigo-500 mr-3 sm:mr-4 mt-0.5 shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs text-gray-400 uppercase font-bold tracking-wider mb-1">Remarks</p>
+                        <p className="text-gray-900 text-base sm:text-lg break-words">{selectedContact.remark || selectedContact.notes}</p>
+                      </div>
+                    </div>
+                  )}
                 </div>
                 
                 <Button 
@@ -181,7 +283,7 @@ const App: React.FC = () => {
                   className="w-full min-h-[44px] text-base"
                   onClick={() => handleDeleteContact(selectedContact.id)}
                 >
-                  Delete Connection
+                  Delete Member
                 </Button>
               </div>
             </div>
@@ -266,7 +368,7 @@ const App: React.FC = () => {
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-white rounded-t-3xl sm:rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-4 duration-300 max-h-[90vh] overflow-y-auto">
             <div className="px-4 sm:px-6 md:px-8 py-4 sm:py-6 border-b flex items-center justify-between bg-indigo-50/50 sticky top-0 bg-white z-10">
-              <h3 className="text-lg sm:text-xl font-bold text-gray-900">New Connection</h3>
+              <h3 className="text-lg sm:text-xl font-bold text-gray-900">Add New Member</h3>
               <button 
                 onClick={() => setIsFormOpen(false)} 
                 className="text-gray-400 hover:text-gray-600 transition-colors p-2 sm:p-2 hover:bg-white rounded-full min-w-[44px] min-h-[44px] flex items-center justify-center"
@@ -278,24 +380,92 @@ const App: React.FC = () => {
             
             <form onSubmit={handleAddContact} className="p-4 sm:p-6 md:p-8 space-y-4 sm:space-y-6">
               <div className="grid grid-cols-1 gap-4 sm:gap-6">
-                <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wider">Full Name *</label>
-                  <div className="relative group">
-                    <User className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-indigo-500 transition-colors pointer-events-none" />
+                {/* Name Fields */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wider">First Name *</label>
+                    <div className="relative group">
+                      <User className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-indigo-500 transition-colors pointer-events-none" />
+                      <input 
+                        required
+                        type="text" 
+                        placeholder="John"
+                        className="w-full pl-11 sm:pl-12 pr-4 py-3.5 sm:py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:bg-white focus:border-indigo-500 transition-all outline-none text-base"
+                        value={formData.firstName || ''}
+                        onChange={e => setFormData(prev => ({...prev, firstName: e.target.value}))}
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wider">Last Name *</label>
                     <input 
                       required
                       type="text" 
-                      placeholder="Jane Doe"
-                      className="w-full pl-11 sm:pl-12 pr-4 py-3.5 sm:py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:bg-white focus:border-indigo-500 transition-all outline-none text-base"
-                      value={formData.name}
-                      onChange={e => setFormData(prev => ({...prev, name: e.target.value}))}
+                      placeholder="Doe"
+                      className="w-full px-4 py-3.5 sm:py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:bg-white focus:border-indigo-500 transition-all outline-none text-base"
+                      value={formData.lastName || ''}
+                      onChange={e => setFormData(prev => ({...prev, lastName: e.target.value}))}
                     />
                   </div>
                 </div>
 
+                {/* Gender, Age, Email */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wider">Gender</label>
+                    <select 
+                      className="w-full px-4 py-3.5 sm:py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:bg-white focus:border-indigo-500 transition-all outline-none text-base"
+                      value={formData.gender || ''}
+                      onChange={e => setFormData(prev => ({...prev, gender: e.target.value}))}
+                    >
+                      <option value="">Select</option>
+                      <option value="Male">Male</option>
+                      <option value="Female">Female</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wider">Age</label>
+                    <input 
+                      type="number" 
+                      placeholder="25"
+                      min="1"
+                      max="120"
+                      className="w-full px-4 py-3.5 sm:py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:bg-white focus:border-indigo-500 transition-all outline-none text-base"
+                      value={formData.age || ''}
+                      onChange={e => setFormData(prev => ({...prev, age: e.target.value ? parseInt(e.target.value) : undefined}))}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wider">Email</label>
+                    <input 
+                      type="email" 
+                      placeholder="john@example.com"
+                      className="w-full px-4 py-3.5 sm:py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:bg-white focus:border-indigo-500 transition-all outline-none text-base"
+                      value={formData.email || ''}
+                      onChange={e => setFormData(prev => ({...prev, email: e.target.value}))}
+                    />
+                  </div>
+                </div>
+
+                {/* Phone and Occupation */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wider">Profession *</label>
+                    <label className="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wider">Phone *</label>
+                    <div className="relative group">
+                      <Phone className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-indigo-500 transition-colors pointer-events-none" />
+                      <input 
+                        required
+                        type="tel" 
+                        placeholder="+1 234..."
+                        className="w-full pl-11 sm:pl-12 pr-4 py-3.5 sm:py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:bg-white focus:border-indigo-500 transition-all outline-none text-base"
+                        value={formData.phone || ''}
+                        onChange={e => setFormData(prev => ({...prev, phone: e.target.value}))}
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wider">Occupation *</label>
                     <div className="relative group">
                       <Briefcase className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-indigo-500 transition-colors pointer-events-none" />
                       <input 
@@ -303,40 +473,93 @@ const App: React.FC = () => {
                         type="text" 
                         placeholder="Engineer"
                         className="w-full pl-11 sm:pl-12 pr-4 py-3.5 sm:py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:bg-white focus:border-indigo-500 transition-all outline-none text-base"
-                        value={formData.profession}
-                        onChange={e => setFormData(prev => ({...prev, profession: e.target.value}))}
+                        value={formData.occupation || ''}
+                        onChange={e => setFormData(prev => ({...prev, occupation: e.target.value}))}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Address */}
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wider">Address</label>
+                  <textarea 
+                    rows={2}
+                    placeholder="Street address"
+                    className="w-full px-4 py-3.5 sm:py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:bg-white focus:border-indigo-500 transition-all outline-none text-base resize-none"
+                    value={formData.address || ''}
+                    onChange={e => setFormData(prev => ({...prev, address: e.target.value}))}
+                  />
+                </div>
+
+                {/* City and BHAG */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wider">City *</label>
+                    <div className="relative group">
+                      <MapPin className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-indigo-500 transition-colors pointer-events-none" />
+                      <input 
+                        required
+                        type="text" 
+                        placeholder="Nagpur"
+                        className="w-full pl-11 sm:pl-12 pr-4 py-3.5 sm:py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:bg-white focus:border-indigo-500 transition-all outline-none text-base"
+                        value={formData.city || ''}
+                        onChange={e => setFormData(prev => ({...prev, city: e.target.value}))}
                       />
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wider">Contact No.</label>
-                    <div className="relative group">
-                      <Phone className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-indigo-500 transition-colors pointer-events-none" />
-                      <input 
-                        type="tel" 
-                        placeholder="+1 234..."
-                        className="w-full pl-11 sm:pl-12 pr-4 py-3.5 sm:py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:bg-white focus:border-indigo-500 transition-all outline-none text-base"
-                        value={formData.contactNumber}
-                        onChange={e => setFormData(prev => ({...prev, contactNumber: e.target.value}))}
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wider">Living Area</label>
-                  <div className="relative group">
-                    <MapPin className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-indigo-500 transition-colors pointer-events-none" />
+                    <label className="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wider">BHAG Code</label>
                     <input 
                       type="text" 
-                      placeholder="Manhattan, NY"
-                      className="w-full pl-11 sm:pl-12 pr-4 py-3.5 sm:py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:bg-white focus:border-indigo-500 transition-all outline-none text-base"
-                      value={formData.area}
-                      onChange={e => setFormData(prev => ({...prev, area: e.target.value}))}
+                      placeholder="B01"
+                      className="w-full px-4 py-3.5 sm:py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:bg-white focus:border-indigo-500 transition-all outline-none text-base"
+                      value={formData.bhagCode || ''}
+                      onChange={e => setFormData(prev => ({...prev, bhagCode: e.target.value}))}
                     />
                   </div>
                 </div>
 
+                {/* Nagar Code and Basti Code */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wider">Nagar Code</label>
+                    <input 
+                      type="text" 
+                      placeholder="N001"
+                      className="w-full px-4 py-3.5 sm:py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:bg-white focus:border-indigo-500 transition-all outline-none text-base"
+                      value={formData.nagarCode || ''}
+                      onChange={e => setFormData(prev => ({...prev, nagarCode: e.target.value}))}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wider">Basti Code</label>
+                    <input 
+                      type="text" 
+                      placeholder="B001"
+                      className="w-full px-4 py-3.5 sm:py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:bg-white focus:border-indigo-500 transition-all outline-none text-base"
+                      value={formData.bastiCode || ''}
+                      onChange={e => setFormData(prev => ({...prev, bastiCode: e.target.value}))}
+                    />
+                  </div>
+                </div>
+
+                {/* Activation Status */}
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wider">Activation Status</label>
+                  <select 
+                    className="w-full px-4 py-3.5 sm:py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:bg-white focus:border-indigo-500 transition-all outline-none text-base"
+                    value={formData.activation || 'Pending'}
+                    onChange={e => setFormData(prev => ({...prev, activation: e.target.value}))}
+                  >
+                    <option value="Pending">Pending</option>
+                    <option value="Contacted">Contacted</option>
+                    <option value="Active">Active</option>
+                    <option value="Inactive">Inactive</option>
+                  </select>
+                </div>
+
+                {/* Referral */}
                 <div>
                   <label className="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wider">Who introduced you?</label>
                   <div className="relative group">
@@ -345,10 +568,22 @@ const App: React.FC = () => {
                       type="text" 
                       placeholder="Common friend, Mike..."
                       className="w-full pl-11 sm:pl-12 pr-4 py-3.5 sm:py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:bg-white focus:border-indigo-500 transition-all outline-none text-base"
-                      value={formData.referredBy}
+                      value={formData.referredBy || ''}
                       onChange={e => setFormData(prev => ({...prev, referredBy: e.target.value}))}
                     />
                   </div>
+                </div>
+
+                {/* Remark/Notes */}
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wider">Remark / Notes</label>
+                  <textarea 
+                    rows={3}
+                    placeholder="Additional notes..."
+                    className="w-full px-4 py-3.5 sm:py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:bg-white focus:border-indigo-500 transition-all outline-none text-base resize-none"
+                    value={formData.remark || ''}
+                    onChange={e => setFormData(prev => ({...prev, remark: e.target.value}))}
+                  />
                 </div>
               </div>
 
@@ -365,7 +600,7 @@ const App: React.FC = () => {
                   type="submit" 
                   className="flex-[2] min-h-[48px] text-base"
                 >
-                  Save Connection
+                  Save Member
                 </Button>
               </div>
             </form>

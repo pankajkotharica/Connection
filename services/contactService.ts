@@ -54,26 +54,39 @@ export const contactService = {
       throw new Error('Supabase is not configured. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in your .env.local file.');
     }
 
-    // Split name into first_name and last_name
-    const nameParts = contact.name.trim().split(/\s+/);
-    const firstName = nameParts[0] || '';
-    const lastName = nameParts.slice(1).join(' ') || '';
-
     // Generate a simple member_id if not provided (using timestamp)
-    const memberId = `M${Date.now()}`;
+    const memberId = contact.memberId || `M${Date.now()}`;
+    
+    // Format reg_date
+    const regDate = contact.regDate || new Date().toISOString().split('T')[0];
+
+    // Combine referredBy and notes into remark
+    let remark = contact.remark || '';
+    if (contact.referredBy && !remark.includes('Referred by:')) {
+      remark = `Referred by: ${contact.referredBy}${remark ? ` | ${remark}` : ''}`;
+    }
+    if (contact.notes && !remark.includes(contact.notes)) {
+      remark = remark ? `${remark} | ${contact.notes}` : contact.notes;
+    }
 
     const memberData = {
       member_id: memberId,
-      first_name: firstName,
-      last_name: lastName,
-      occupation: contact.profession, // profession -> occupation
-      phone: contact.contactNumber || null, // contactNumber -> phone
-      city: contact.area || null, // area -> city
-      remark: contact.referredBy ? `Referred by: ${contact.referredBy}${contact.notes ? ` | ${contact.notes}` : ''}` : (contact.notes || null), // referredBy and notes -> remark
-      activation: 'Pending',
-      nagar_code: null,
-      basti_code: null,
-      activation_dt: null,
+      reg_date: regDate,
+      first_name: contact.firstName || '',
+      last_name: contact.lastName || '',
+      gender: contact.gender || null,
+      email: contact.email || null,
+      phone: contact.phone || contact.contactNumber || null,
+      age: contact.age || null,
+      address: contact.address || null,
+      city: contact.city || contact.area || '',
+      bhag_code: contact.bhagCode || null,
+      occupation: contact.occupation || contact.profession || '',
+      nagar_code: contact.nagarCode || null,
+      basti_code: contact.bastiCode || null,
+      activation: contact.activation || 'Pending',
+      activation_dt: contact.activationDt || null,
+      remark: remark || null,
     };
 
     const { data, error } = await supabase
@@ -98,15 +111,28 @@ export const contactService = {
 
     const updateData: any = {};
     
-    if (updates.name !== undefined) {
-      // Split name into first_name and last_name
-      const nameParts = updates.name.trim().split(/\s+/);
-      updateData.first_name = nameParts[0] || '';
-      updateData.last_name = nameParts.slice(1).join(' ') || '';
-    }
-    if (updates.profession !== undefined) updateData.occupation = updates.profession;
+    if (updates.firstName !== undefined) updateData.first_name = updates.firstName;
+    if (updates.lastName !== undefined) updateData.last_name = updates.lastName;
+    if (updates.gender !== undefined) updateData.gender = updates.gender;
+    if (updates.email !== undefined) updateData.email = updates.email;
+    if (updates.phone !== undefined) updateData.phone = updates.phone;
     if (updates.contactNumber !== undefined) updateData.phone = updates.contactNumber;
+    if (updates.age !== undefined) updateData.age = updates.age;
+    if (updates.address !== undefined) updateData.address = updates.address;
+    if (updates.city !== undefined) updateData.city = updates.city;
     if (updates.area !== undefined) updateData.city = updates.area;
+    if (updates.bhagCode !== undefined) updateData.bhag_code = updates.bhagCode;
+    if (updates.occupation !== undefined) updateData.occupation = updates.occupation;
+    if (updates.profession !== undefined) updateData.occupation = updates.profession;
+    if (updates.nagarCode !== undefined) updateData.nagar_code = updates.nagarCode;
+    if (updates.bastiCode !== undefined) updateData.basti_code = updates.bastiCode;
+    if (updates.activation !== undefined) {
+      updateData.activation = updates.activation;
+      if (updates.activation === 'Contacted') {
+        updateData.activation_dt = new Date().toISOString().slice(0, 16).replace('T', ' ');
+      }
+    }
+    if (updates.remark !== undefined) updateData.remark = updates.remark;
     if (updates.referredBy !== undefined || updates.notes !== undefined) {
       // Combine referredBy and notes into remark
       const remarkParts = [];
@@ -156,25 +182,48 @@ function transformFromDB(row: any): Contact {
   // Extract referredBy and notes from remark field
   let referredBy = '';
   let notes = '';
-  if (row.remark) {
-    const referredMatch = row.remark.match(/Referred by: ([^|]+)/);
+  let remark = row.remark || '';
+  if (remark) {
+    const referredMatch = remark.match(/Referred by: ([^|]+)/);
     if (referredMatch) {
       referredBy = referredMatch[1].trim();
-      notes = row.remark.replace(/Referred by: [^|]+\s*\|\s*/, '').trim();
+      notes = remark.replace(/Referred by: [^|]+\s*\|\s*/, '').trim();
+      // If notes still contains the referredBy part, use it as remark
+      if (!notes) {
+        notes = remark.replace(/Referred by: [^|]+/, '').replace(/\s*\|\s*/, '').trim();
+      }
     } else {
-      notes = row.remark;
+      notes = remark;
     }
   }
 
   return {
     id: String(row.id), // Convert number id to string
+    memberId: row.member_id,
+    regDate: row.reg_date,
+    firstName: row.first_name || '',
+    lastName: row.last_name || '',
+    gender: row.gender,
+    email: row.email,
+    phone: row.phone || '',
+    age: row.age,
+    address: row.address,
+    city: row.city || '',
+    bhagCode: row.bhag_code,
+    occupation: row.occupation || '',
+    nagarCode: row.nagar_code,
+    bastiCode: row.basti_code,
+    activation: row.activation || 'Pending',
+    activationDt: row.activation_dt,
+    remark: remark,
+    referredBy: referredBy,
+    notes: notes || undefined,
+    createdAt: new Date(row.created_at).getTime(),
+    // Legacy fields for backward compatibility
     name: fullName,
     profession: row.occupation || '',
     contactNumber: row.phone || '',
     area: row.city || '',
-    referredBy: referredBy,
-    notes: notes || undefined,
-    createdAt: new Date(row.created_at).getTime(),
   };
 }
 
