@@ -11,27 +11,29 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 -- Members table
+-- Fields: Memberid, Date, First Name, Last Name, Gender, Address, City, BHAG, Email, Phone, Age, Occupation, Activation, Activation Dt, Remark
+-- BHAG is assigned by admin. Users can add nagar_code and basti_code.
 CREATE TABLE IF NOT EXISTS members (
   id SERIAL PRIMARY KEY,
-  member_id VARCHAR(20) UNIQUE,
-  reg_date VARCHAR(20),
-  first_name VARCHAR(50),
-  last_name VARCHAR(50),
-  gender VARCHAR(10),
-  address TEXT,
-  city VARCHAR(50),
-  bhag_code VARCHAR(50),
-  email VARCHAR(100),
-  phone VARCHAR(20),
-  age INTEGER,
-  occupation VARCHAR(100),
-  remark TEXT,
+  member_id VARCHAR(20) UNIQUE,              -- Memberid: Unique member identifier
+  reg_date VARCHAR(20),                      -- Date: Registration date
+  first_name VARCHAR(50),                    -- First Name
+  last_name VARCHAR(50),                     -- Last Name
+  gender VARCHAR(10),                        -- Gender
+  address TEXT,                              -- Address
+  city VARCHAR(50),                          -- City
+  bhag_code VARCHAR(50),                     -- BHAG: Area code assigned by admin
+  email VARCHAR(100),                        -- Email
+  phone VARCHAR(20),                         -- Phone
+  age INTEGER,                               -- Age
+  occupation VARCHAR(100),                   -- Occupation
+  remark TEXT,                               -- Remark
   
-  -- User-Updated Fields
-  nagar_code VARCHAR(50),
-  basti_code VARCHAR(50),
-  activation VARCHAR(20) DEFAULT 'Pending',
-  activation_dt VARCHAR(20),
+  -- User-Updated Fields (users can add/update these)
+  nagar_code VARCHAR(50),                    -- Nagar Code: Can be added by users
+  basti_code VARCHAR(50),                    -- Basti Code: Can be added by users
+  activation VARCHAR(20) DEFAULT 'Pending',  -- Activation: Status (Pending, Contacted, etc.)
+  activation_dt VARCHAR(20),                 -- Activation Dt: Activation date/time
   
   created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL,
   updated_at TIMESTAMPTZ DEFAULT NOW() NOT NULL

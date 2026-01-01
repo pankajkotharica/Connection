@@ -45,6 +45,7 @@ def login():
 
 @app.route('/api/organization/dashboard', methods=['GET', 'OPTIONS'])
 def dashboard():
+    """Get all members for a specific bhag_code"""
     if request.method == 'OPTIONS':
         return '', 200, {
             'Access-Control-Allow-Origin': '*',
@@ -58,12 +59,18 @@ def dashboard():
         return jsonify({"error": "Missing bhag_code parameter"}), 400, {'Access-Control-Allow-Origin': '*'}
     
     supabase = get_supabase()
-    response = supabase.table('members').select('*').eq('bhag_code', bhag_code).execute()
-    
-    return jsonify(response.data), 200, {'Access-Control-Allow-Origin': '*'}
+    try:
+        # Get members ordered by creation date (newest first)
+        response = supabase.table('members').select('*').eq('bhag_code', bhag_code).order('created_at').execute()
+        # Reverse to get newest first (Supabase orders ascending by default)
+        response.data.reverse()
+        return jsonify(response.data), 200, {'Access-Control-Allow-Origin': '*'}
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500, {'Access-Control-Allow-Origin': '*'}
 
-@app.route('/api/organization/update/<int:member_id>', methods=['POST', 'OPTIONS'])
-def update(member_id):
+@app.route('/api/organization/members', methods=['POST', 'OPTIONS'])
+def create_member():
+    """Create a new member - Admin only"""
     if request.method == 'OPTIONS':
         return '', 200, {
             'Access-Control-Allow-Origin': '*',
@@ -72,19 +79,90 @@ def update(member_id):
         }
     
     data = request.get_json()
-    update_data = {
-        'nagar_code': data.get('nagar_code'),
-        'basti_code': data.get('basti_code'),
-        'activation': data.get('activation')
+    
+    # Required fields: member_id, first_name, last_name, bhag_code
+    member_data = {
+        'member_id': data.get('member_id'),
+        'reg_date': data.get('reg_date') or datetime.now().strftime("%Y-%m-%d"),
+        'first_name': data.get('first_name'),
+        'last_name': data.get('last_name'),
+        'gender': data.get('gender'),
+        'address': data.get('address'),
+        'city': data.get('city'),
+        'bhag_code': data.get('bhag_code'),  # Assigned by admin
+        'email': data.get('email'),
+        'phone': data.get('phone'),
+        'age': data.get('age'),
+        'occupation': data.get('occupation'),
+        'remark': data.get('remark'),
+        'activation': 'Pending',  # Default activation status
+        'nagar_code': None,  # Will be updated by users
+        'basti_code': None,  # Will be updated by users
+        'activation_dt': None
     }
     
-    if data.get('activation') == "Contacted":
-        update_data['activation_dt'] = datetime.now().strftime("%Y-%m-%d %H:%M")
+    supabase = get_supabase()
+    try:
+        response = supabase.table('members').insert(member_data).execute()
+        return jsonify({"success": True, "data": response.data}), 201, {'Access-Control-Allow-Origin': '*'}
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 400, {'Access-Control-Allow-Origin': '*'}
+
+@app.route('/api/organization/update/<int:member_id>', methods=['POST', 'OPTIONS'])
+def update(member_id):
+    """Update member - Users can update nagar_code, basti_code, and activation"""
+    if request.method == 'OPTIONS':
+        return '', 200, {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'POST, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type'
+        }
+    
+    data = request.get_json()
+    update_data = {}
+    
+    # Users can update these fields
+    if 'nagar_code' in data:
+        update_data['nagar_code'] = data.get('nagar_code')
+    if 'basti_code' in data:
+        update_data['basti_code'] = data.get('basti_code')
+    if 'activation' in data:
+        update_data['activation'] = data.get('activation')
+        # Set activation date if status is "Contacted"
+        if data.get('activation') == "Contacted":
+            update_data['activation_dt'] = datetime.now().strftime("%Y-%m-%d %H:%M")
+        elif data.get('activation') == "Pending":
+            update_data['activation_dt'] = None
+    
+    if not update_data:
+        return jsonify({"success": False, "error": "No fields to update"}), 400, {'Access-Control-Allow-Origin': '*'}
     
     supabase = get_supabase()
-    response = supabase.table('members').update(update_data).eq('id', member_id).execute()
+    try:
+        response = supabase.table('members').update(update_data).eq('id', member_id).execute()
+        return jsonify({"success": True, "data": response.data}), 200, {'Access-Control-Allow-Origin': '*'}
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 400, {'Access-Control-Allow-Origin': '*'}
+
+@app.route('/api/organization/members/<int:member_id>', methods=['GET', 'OPTIONS'])
+def get_member(member_id):
+    """Get a single member by ID"""
+    if request.method == 'OPTIONS':
+        return '', 200, {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'GET, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type'
+        }
     
-    return jsonify({"success": True, "data": response.data}), 200, {'Access-Control-Allow-Origin': '*'}
+    supabase = get_supabase()
+    try:
+        response = supabase.table('members').select('*').eq('id', member_id).execute()
+        if response.data:
+            return jsonify(response.data[0]), 200, {'Access-Control-Allow-Origin': '*'}
+        else:
+            return jsonify({"error": "Member not found"}), 404, {'Access-Control-Allow-Origin': '*'}
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500, {'Access-Control-Allow-Origin': '*'}
 
 @app.route('/api/organization/health', methods=['GET'])
 def health():
