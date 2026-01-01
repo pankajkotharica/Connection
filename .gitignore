@@ -32,8 +32,12 @@ __pycache__/
 env/
 venv/
 ENV/
+.venv/
 flask_backend/organisation.db
+organisation.db
 
 # Flask
 *.db
 *.sqlite
+*.pyc
+.pytest_cache/
