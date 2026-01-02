@@ -63,12 +63,14 @@ const App: React.FC = () => {
     referredBy: '',
   });
 
-  // Load contacts from Supabase
+  // Load contacts from Supabase (filtered by user's BHAG code if not admin)
   useEffect(() => {
     const loadContacts = async () => {
+      if (!currentUser) return;
+      
       try {
         setIsLoadingContacts(true);
-        const data = await contactService.getAll();
+        const data = await contactService.getAll(currentUser.bhagCode, currentUser.isAdmin);
         setContacts(data);
       } catch (error) {
         console.error('Failed to load contacts:', error);
@@ -78,8 +80,10 @@ const App: React.FC = () => {
       }
     };
 
-    loadContacts();
-  }, []);
+    if (isAuthenticated && currentUser) {
+      loadContacts();
+    }
+  }, [isAuthenticated, currentUser]);
 
   const handleAddContact = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -104,7 +108,14 @@ const App: React.FC = () => {
         referredBy: formData.referredBy,
       });
 
-      setContacts(prev => [newContact, ...prev]);
+      // Only add to list if user is admin or contact's BHAG matches user's BHAG
+      if (currentUser && (currentUser.isAdmin || newContact.bhagCode === currentUser.bhagCode)) {
+        setContacts(prev => [newContact, ...prev]);
+      } else {
+        // Reload contacts from server to ensure consistency
+        const data = await contactService.getAll(currentUser?.bhagCode || null, currentUser?.isAdmin || false);
+        setContacts(data);
+      }
       setIsFormOpen(false);
       // Reset form
       setFormData({ 
@@ -265,7 +276,13 @@ const App: React.FC = () => {
             <div>
               <h1 className="text-lg sm:text-xl font-bold text-gray-900 tracking-tight">JOIN RSS</h1>
               {currentUser && (
-                <p className="text-xs text-gray-500">BHAG: {currentUser.bhagCode} | {currentUser.username}</p>
+                <p className="text-xs text-gray-500">
+                  {currentUser.isAdmin ? (
+                    <>ADMIN | {currentUser.username}</>
+                  ) : (
+                    <>BHAG: {currentUser.bhagCode} | {currentUser.username}</>
+                  )}
+                </p>
               )}
             </div>
           </div>

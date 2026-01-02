@@ -4,16 +4,22 @@ import { Contact } from '../types';
 const TABLE_NAME = 'members';
 
 export const contactService = {
-  // Get all contacts
-  async getAll(): Promise<Contact[]> {
+  // Get all contacts (filtered by BHAG code if user is not admin)
+  async getAll(bhagCode?: string | null, isAdmin?: boolean): Promise<Contact[]> {
     if (!isSupabaseConfigured) {
       throw new Error('Supabase is not configured. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in your .env.local file. See SETUP.md for instructions.');
     }
 
-    const { data, error } = await supabase
+    let query = supabase
       .from(TABLE_NAME)
-      .select('*')
-      .order('created_at', { ascending: false });
+      .select('*');
+
+    // Filter by BHAG code if user is not admin
+    if (!isAdmin && bhagCode) {
+      query = query.eq('bhag_code', bhagCode);
+    }
+
+    const { data, error } = await query.order('created_at', { ascending: false });
 
     if (error) {
       console.error('Error fetching contacts:', error);

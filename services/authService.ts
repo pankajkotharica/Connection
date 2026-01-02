@@ -3,7 +3,8 @@ import { supabase, isSupabaseConfigured } from './supabaseClient';
 export interface User {
   id: number;
   username: string;
-  bhagCode: string;
+  bhagCode: string | null;
+  isAdmin: boolean;
 }
 
 export interface LoginCredentials {
@@ -31,10 +32,14 @@ export const authService = {
       throw new Error('Invalid username or password');
     }
 
+    // Check if user is admin (bhag_code is null or empty)
+    const isAdmin = !data.bhag_code || data.bhag_code.trim() === '';
+
     const user: User = {
       id: data.id,
       username: data.username,
-      bhagCode: data.bhag_code,
+      bhagCode: data.bhag_code || null,
+      isAdmin: isAdmin,
     };
 
     // Store user in localStorage
@@ -48,10 +53,21 @@ export const authService = {
     try {
       const userStr = localStorage.getItem(STORAGE_KEY);
       if (!userStr) return null;
-      return JSON.parse(userStr) as User;
+      const user = JSON.parse(userStr) as User;
+      // Ensure isAdmin is set correctly for existing sessions
+      if (user.isAdmin === undefined) {
+        user.isAdmin = !user.bhagCode || user.bhagCode.trim() === '';
+      }
+      return user;
     } catch {
       return null;
     }
+  },
+
+  // Check if current user is admin
+  isAdmin(): boolean {
+    const user = this.getCurrentUser();
+    return user?.isAdmin || false;
   },
 
   // Logout user
@@ -64,4 +80,5 @@ export const authService = {
     return this.getCurrentUser() !== null;
   },
 };
+
 
