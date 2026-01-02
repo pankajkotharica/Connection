@@ -3,10 +3,14 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Contact } from './types';
 import { Button } from './components/Button';
 import { ContactCard } from './components/ContactCard';
+import { Login } from './components/Login';
 import { contactService } from './services/contactService';
-import { Plus, Search, X, Phone, MapPin, Users, Briefcase, ArrowLeft, User, Mail, Calendar, ChevronDown, Filter, Trash2 } from 'lucide-react';
+import { authService, User } from './services/authService';
+import { Plus, Search, X, Phone, MapPin, Users, Briefcase, ArrowLeft, User as UserIcon, Mail, Calendar, ChevronDown, Filter, Trash2, LogOut } from 'lucide-react';
 
 const App: React.FC = () => {
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
@@ -14,6 +18,31 @@ const App: React.FC = () => {
     { id: '1', field: 'all', query: '' }
   ]);
   const [isLoadingContacts, setIsLoadingContacts] = useState(true);
+
+  // Check authentication on mount
+  useEffect(() => {
+    const user = authService.getCurrentUser();
+    if (user) {
+      setCurrentUser(user);
+      setIsAuthenticated(true);
+    }
+  }, []);
+
+  const handleLoginSuccess = () => {
+    const user = authService.getCurrentUser();
+    if (user) {
+      setCurrentUser(user);
+      setIsAuthenticated(true);
+    }
+  };
+
+  const handleLogout = () => {
+    authService.logout();
+    setCurrentUser(null);
+    setIsAuthenticated(false);
+    setContacts([]);
+    setSelectedContact(null);
+  };
 
   // Form State
   const [formData, setFormData] = useState<Partial<Contact>>({
@@ -219,16 +248,26 @@ const App: React.FC = () => {
     });
   }, [contacts, searchFields]);
 
+  // Show login page if not authenticated
+  if (!isAuthenticated) {
+    return <Login onLoginSuccess={handleLoginSuccess} />;
+  }
+
   return (
     <div className="min-h-screen bg-slate-50">
       {/* Header */}
       <header className="bg-white border-b sticky top-0 z-20 shadow-sm safe-area-top">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between gap-3 sm:gap-4">
           <div className="flex items-center space-x-2 shrink-0">
-            <div className="w-8 h-8 sm:w-9 sm:h-9 bg-indigo-600 rounded-lg flex items-center justify-center">
-              <Users className="w-5 h-5 text-white" />
+            <div className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center">
+              <img src="/logo.svg" alt="JOIN RSS Logo" className="w-full h-full object-contain" />
             </div>
-            <h1 className="text-lg sm:text-xl font-bold text-gray-900 tracking-tight">JOIN RSS</h1>
+            <div>
+              <h1 className="text-lg sm:text-xl font-bold text-gray-900 tracking-tight">JOIN RSS</h1>
+              {currentUser && (
+                <p className="text-xs text-gray-500">BHAG: {currentUser.bhagCode} | {currentUser.username}</p>
+              )}
+            </div>
           </div>
           
           <div className="flex-1 max-w-4xl flex flex-col md:flex-row items-stretch md:items-center space-y-2 md:space-y-0 md:space-x-2">
@@ -312,10 +351,21 @@ const App: React.FC = () => {
               ))}
             </div>
             
-            <Button onClick={() => setIsFormOpen(true)} className="shrink-0 !bg-red-600 hover:!bg-red-700 min-h-[44px] px-4 sm:px-4">
-              <Plus className="w-5 h-5 sm:w-4 sm:h-4 sm:mr-2" />
-              <span className="hidden sm:inline">Add Person</span>
-            </Button>
+            <div className="flex items-center space-x-2">
+              <Button onClick={() => setIsFormOpen(true)} className="shrink-0 !bg-red-600 hover:!bg-red-700 min-h-[44px] px-4 sm:px-4">
+                <Plus className="w-5 h-5 sm:w-4 sm:h-4 sm:mr-2" />
+                <span className="hidden sm:inline">Add Person</span>
+              </Button>
+              <Button 
+                onClick={handleLogout} 
+                variant="secondary" 
+                className="shrink-0 min-h-[44px] px-4 sm:px-4"
+                title="Logout"
+              >
+                <LogOut className="w-5 h-5 sm:w-4 sm:h-4" />
+                <span className="hidden sm:inline ml-2">Logout</span>
+              </Button>
+            </div>
           </div>
         </div>
       </header>
@@ -359,7 +409,7 @@ const App: React.FC = () => {
                   )}
                   {selectedContact.email && (
                     <div className="flex items-start">
-                      <User className="w-5 h-5 text-indigo-500 mr-3 sm:mr-4 mt-0.5 shrink-0" />
+                      <UserIcon className="w-5 h-5 text-indigo-500 mr-3 sm:mr-4 mt-0.5 shrink-0" />
                       <div className="flex-1 min-w-0">
                         <p className="text-xs text-gray-400 uppercase font-bold tracking-wider mb-1">Email</p>
                         <p className="text-gray-900 text-base sm:text-lg break-words">{selectedContact.email}</p>
@@ -394,7 +444,7 @@ const App: React.FC = () => {
                   )}
                   {selectedContact.gender && (
                     <div className="flex items-start">
-                      <User className="w-5 h-5 text-indigo-500 mr-3 sm:mr-4 mt-0.5 shrink-0" />
+                      <UserIcon className="w-5 h-5 text-indigo-500 mr-3 sm:mr-4 mt-0.5 shrink-0" />
                       <div className="flex-1 min-w-0">
                         <p className="text-xs text-gray-400 uppercase font-bold tracking-wider mb-1">Gender</p>
                         <p className="text-gray-900 text-base sm:text-lg break-words">{selectedContact.gender}</p>
@@ -403,7 +453,7 @@ const App: React.FC = () => {
                   )}
                   {selectedContact.age && (
                     <div className="flex items-start">
-                      <User className="w-5 h-5 text-indigo-500 mr-3 sm:mr-4 mt-0.5 shrink-0" />
+                      <UserIcon className="w-5 h-5 text-indigo-500 mr-3 sm:mr-4 mt-0.5 shrink-0" />
                       <div className="flex-1 min-w-0">
                         <p className="text-xs text-gray-400 uppercase font-bold tracking-wider mb-1">Age</p>
                         <p className="text-gray-900 text-base sm:text-lg break-words">{selectedContact.age} years</p>
@@ -613,7 +663,7 @@ const App: React.FC = () => {
                   <div>
                     <label className="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wider">First Name *</label>
                     <div className="relative group">
-                      <User className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-indigo-500 transition-colors pointer-events-none" />
+                      <UserIcon className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-indigo-500 transition-colors pointer-events-none" />
                       <input 
                         required
                         type="text" 
