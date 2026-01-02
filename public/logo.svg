@@ -1,15 +1,23 @@
 <svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <!-- Saffron Flag (Bhagwa Dhwaj) - RSS Flag -->
+  <!-- Saffron Flag (Bhagwa Dhwaj) with RSS Logo -->
+  <!-- White circular border background -->
+  <circle cx="40" cy="40" r="38" fill="white" stroke="#e5e7eb" stroke-width="2"/>
+  
   <!-- Flag Pole -->
-  <rect x="14" y="8" width="2.5" height="64" fill="#FF9933" rx="1.25"/>
+  <rect x="18" y="12" width="2.5" height="56" fill="#FF9933" rx="1.25"/>
   
-  <!-- Main Flag Body - Saffron/Orange with slight wave -->
-  <path d="M 16.5 14 L 62 20 L 62 52 L 16.5 58 Z" fill="#FF9933"/>
+  <!-- Tassels/Streamers at top of pole -->
+  <path d="M 19.25 12 L 17 16 L 21.5 16 Z" fill="#FF9933"/>
+  <path d="M 19.25 12 L 20 16 L 18.5 16 Z" fill="#FF9933"/>
   
-  <!-- Swallowtail/Streamer ends -->
-  <path d="M 62 20 L 66 22.5 L 62 25 L 62 20 Z" fill="#FF9933"/>
-  <path d="M 62 28 L 66 30.5 L 62 33 L 62 28 Z" fill="#FF9933"/>
-  <path d="M 62 36 L 66 38.5 L 62 41 L 62 36 Z" fill="#FF9933"/>
-  <path d="M 62 44 L 66 46.5 L 62 49 L 62 44 Z" fill="#FF9933"/>
-  <path d="M 62 52 L 66 54.5 L 62 57 L 62 52 Z" fill="#FF9933"/>
+  <!-- Main Flag Body - Saffron with swallowtail shape -->
+  <path d="M 20.5 16 Q 22 18 24 20 L 50 22 Q 52 23 53 25 L 53 35 Q 53 37 51 38 L 51 42 Q 53 43 53 45 L 53 55 Q 52 57 50 58 L 24 60 Q 22 62 20.5 64 Z" fill="#FF9933"/>
+  
+  <!-- Swallowtail (forked) end of flag -->
+  <path d="M 53 25 L 58 27 L 53 29.5 L 53 25 Z" fill="#FF9933"/>
+  <path d="M 53 45 L 58 47 L 53 49.5 L 53 45 Z" fill="#FF9933"/>
+  <path d="M 53 55 L 58 57 L 53 59 L 53 55 Z" fill="#FF9933"/>
+  
+  <!-- RSS Text in white on the flag -->
+  <text x="36" y="42" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white" text-anchor="middle" letter-spacing="1">RSS</text>
 </svg>
