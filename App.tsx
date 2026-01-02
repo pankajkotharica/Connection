@@ -1006,31 +1006,56 @@ const App: React.FC = () => {
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wider">BHAG Code</label>
-                    <div className="relative group">
-                      <select
-                        className="w-full px-4 py-3.5 sm:py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:bg-white focus:border-indigo-500 transition-all outline-none text-base appearance-none pr-10"
-                        value={formData.bhagCode || ''}
-                        onChange={e => setFormData(prev => ({...prev, bhagCode: e.target.value}))}
-                      >
-                        <option value="">Select BHAG Code</option>
-                        <option value="MOHITE">MOHITE</option>
-                        <option value="ITWARI">ITWARI</option>
-                        <option value="LALGANJ">LALGANJ</option>
-                        <option value="BINAKI">BINAKI</option>
-                        <option value="SADAR">SADAR</option>
-                        <option value="GITTIKHADAN">GITTIKHADAN</option>
-                        <option value="DHARAMPETH">DHARAMPETH</option>
-                        <option value="TRIMURTI">TRIMURTI</option>
-                        <option value="SOMALWADA">SOMALWADA</option>
-                        <option value="AJNI">AJNI</option>
-                        <option value="AYODHYA">AYODHYA</option>
-                        <option value="NANDANVAN">NANDANVAN</option>
-                        <option value="RAMTEK VIBHAG">RAMTEK VIBHAG</option>
-                        <option value="OTHER">OTHER</option>
-                      </select>
-                      <ChevronDown className="w-5 h-5 absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                    <div className="flex items-center justify-between mb-2">
+                      <label className={`block text-sm font-bold ${currentUser?.isAdmin ? 'text-indigo-700' : 'text-gray-700'} mb-0 uppercase tracking-wider`}>
+                        BHAG Code {currentUser?.isAdmin && <span className="text-xs normal-case text-indigo-600">(Admin: Select Any)</span>}
+                      </label>
+                      {currentUser?.isAdmin && (
+                        <Shield className="w-4 h-4 text-indigo-600" />
+                      )}
                     </div>
+                    <div className={`relative group ${currentUser?.isAdmin ? 'bg-indigo-50 rounded-lg p-1' : ''}`}>
+                      <select
+                        className={`w-full px-4 py-3.5 sm:py-3 border rounded-xl focus:ring-2 focus:ring-indigo-500 focus:bg-white focus:border-indigo-500 transition-all outline-none text-base appearance-none pr-10 ${
+                          currentUser?.isAdmin 
+                            ? 'bg-white border-2 border-indigo-300' 
+                            : 'bg-gray-50 border-gray-200'
+                        }`}
+                        value={formData.bhagCode || (currentUser && !currentUser.isAdmin ? currentUser.bhagCode || '' : '')}
+                        onChange={e => setFormData(prev => ({...prev, bhagCode: e.target.value}))}
+                        disabled={currentUser && !currentUser.isAdmin}
+                      >
+                        {currentUser?.isAdmin ? (
+                          <>
+                            <option value="">Select BHAG Code (Admin can assign any)</option>
+                            <option value="MOHITE">MOHITE</option>
+                            <option value="ITWARI">ITWARI</option>
+                            <option value="LALGANJ">LALGANJ</option>
+                            <option value="BINAKI">BINAKI</option>
+                            <option value="SADAR">SADAR</option>
+                            <option value="GITTIKHADAN">GITTIKHADAN</option>
+                            <option value="DHARAMPETH">DHARAMPETH</option>
+                            <option value="TRIMURTI">TRIMURTI</option>
+                            <option value="SOMALWADA">SOMALWADA</option>
+                            <option value="AJNI">AJNI</option>
+                            <option value="AYODHYA">AYODHYA</option>
+                            <option value="NANDANVAN">NANDANVAN</option>
+                            <option value="RAMTEK VIBHAG">RAMTEK VIBHAG</option>
+                            <option value="OTHER">OTHER</option>
+                          </>
+                        ) : (
+                          <>
+                            <option value={currentUser?.bhagCode || ''}>
+                              {currentUser?.bhagCode || 'Not assigned'}
+                            </option>
+                          </>
+                        )}
+                      </select>
+                      <ChevronDown className={`w-5 h-5 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none ${currentUser?.isAdmin ? 'text-indigo-500' : 'text-gray-400'}`} />
+                    </div>
+                    {currentUser && !currentUser.isAdmin && (
+                      <p className="text-xs text-gray-500 mt-1">BHAG Code is assigned by admin</p>
+                    )}
                   </div>
                 </div>
 
