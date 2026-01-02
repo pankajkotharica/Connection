@@ -200,6 +200,32 @@ const App: React.FC = () => {
     return labels[field] || field.charAt(0).toUpperCase() + field.slice(1);
   };
 
+  // Helper function to check if age matches query (supports ranges like "25-30" or "25 to 30")
+  const matchesAgeSearch = (age: number | undefined, query: string): boolean => {
+    if (!age) return false;
+    const q = query.trim();
+    if (!q) return true;
+
+    // Check for range patterns: "25-30", "25 - 30", "25 to 30", "25 TO 30"
+    const rangePattern = /^(\d+)\s*(?:-|to|TO)\s*(\d+)$/i;
+    const rangeMatch = q.match(rangePattern);
+    
+    if (rangeMatch) {
+      const minAge = parseInt(rangeMatch[1], 10);
+      const maxAge = parseInt(rangeMatch[2], 10);
+      return age >= minAge && age <= maxAge;
+    }
+
+    // Check for single age match
+    const singleAge = parseInt(q, 10);
+    if (!isNaN(singleAge)) {
+      return age === singleAge;
+    }
+
+    // Fallback to string includes for partial matches
+    return age.toString().includes(q);
+  };
+
   // Helper function to check if a contact matches a single search criteria
   const matchesSearch = (contact: Contact, field: string, query: string): boolean => {
     const q = query.toLowerCase().trim();
@@ -226,7 +252,7 @@ const App: React.FC = () => {
         (contact.bastiCode || '').toLowerCase().includes(q) ||
         (contact.activation || '').toLowerCase().includes(q) ||
         (contact.remark || contact.notes || '').toLowerCase().includes(q) ||
-        (contact.age?.toString() || '').includes(q) ||
+        matchesAgeSearch(contact.age, query) ||
         (contact.regDate || '').toLowerCase().includes(q)
       );
     } else {
@@ -257,7 +283,7 @@ const App: React.FC = () => {
         case 'gender':
           return (contact.gender || '').toLowerCase().includes(q);
         case 'age':
-          return (contact.age?.toString() || '').includes(q);
+          return matchesAgeSearch(contact.age, query);
         case 'activation':
           return (contact.activation || '').toLowerCase().includes(q);
         case 'referredBy':
