@@ -228,7 +228,7 @@ const App: React.FC = () => {
             <div className="w-8 h-8 sm:w-9 sm:h-9 bg-indigo-600 rounded-lg flex items-center justify-center">
               <Users className="w-5 h-5 text-white" />
             </div>
-            <h1 className="text-lg sm:text-xl font-bold text-gray-900 tracking-tight">Nexus</h1>
+            <h1 className="text-lg sm:text-xl font-bold text-gray-900 tracking-tight">JOIN RSS</h1>
           </div>
           
           <div className="flex-1 max-w-4xl flex flex-col md:flex-row items-stretch md:items-center space-y-2 md:space-y-0 md:space-x-2">
