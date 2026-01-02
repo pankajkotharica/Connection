@@ -18,6 +18,8 @@ const App: React.FC = () => {
     { id: '1', field: 'all', query: '' }
   ]);
   const [isLoadingContacts, setIsLoadingContacts] = useState(true);
+  const [isEditingBhagCode, setIsEditingBhagCode] = useState(false);
+  const [editingBhagCode, setEditingBhagCode] = useState<string>('');
 
   // Check authentication on mount
   useEffect(() => {
@@ -441,11 +443,88 @@ const App: React.FC = () => {
                         <p className="text-gray-900 text-base sm:text-lg break-words">
                           {selectedContact.address && `${selectedContact.address}, `}
                           {selectedContact.city || selectedContact.area}
-                          {selectedContact.bhagCode && ` (BHAG: ${selectedContact.bhagCode})`}
                         </p>
                       </div>
                     </div>
                   )}
+                  {/* BHAG Code - Editable by Admin */}
+                  <div className="flex items-start">
+                    <MapPin className="w-5 h-5 text-indigo-500 mr-3 sm:mr-4 mt-0.5 shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between mb-1">
+                        <p className="text-xs text-gray-400 uppercase font-bold tracking-wider">BHAG Code</p>
+                        {currentUser?.isAdmin && !isEditingBhagCode && (
+                          <button
+                            onClick={() => {
+                              setIsEditingBhagCode(true);
+                              setEditingBhagCode(selectedContact.bhagCode || '');
+                            }}
+                            className="text-xs text-indigo-600 hover:text-indigo-700 font-medium"
+                          >
+                            Edit
+                          </button>
+                        )}
+                      </div>
+                      {currentUser?.isAdmin && isEditingBhagCode ? (
+                        <div className="flex items-center space-x-2">
+                          <div className="relative flex-1">
+                            <select
+                              className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:bg-white focus:border-indigo-500 transition-all outline-none text-base appearance-none pr-8"
+                              value={editingBhagCode}
+                              onChange={(e) => setEditingBhagCode(e.target.value)}
+                            >
+                              <option value="">Select BHAG Code</option>
+                              <option value="MOHITE">MOHITE</option>
+                              <option value="ITWARI">ITWARI</option>
+                              <option value="LALGANJ">LALGANJ</option>
+                              <option value="BINAKI">BINAKI</option>
+                              <option value="SADAR">SADAR</option>
+                              <option value="GITTIKHADAN">GITTIKHADAN</option>
+                              <option value="DHARAMPETH">DHARAMPETH</option>
+                              <option value="TRIMURTI">TRIMURTI</option>
+                              <option value="SOMALWADA">SOMALWADA</option>
+                              <option value="AJNI">AJNI</option>
+                              <option value="AYODHYA">AYODHYA</option>
+                              <option value="NANDANVAN">NANDANVAN</option>
+                              <option value="RAMTEK VIBHAG">RAMTEK VIBHAG</option>
+                              <option value="OTHER">OTHER</option>
+                            </select>
+                            <ChevronDown className="w-4 h-4 absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                          </div>
+                          <button
+                            onClick={async () => {
+                              try {
+                                await contactService.update(selectedContact.id, { bhagCode: editingBhagCode });
+                                const updatedContact = { ...selectedContact, bhagCode: editingBhagCode };
+                                setSelectedContact(updatedContact);
+                                setContacts(prev => prev.map(c => c.id === selectedContact.id ? updatedContact : c));
+                                setIsEditingBhagCode(false);
+                              } catch (error) {
+                                console.error('Failed to update BHAG code:', error);
+                                alert('Failed to update BHAG code. Please try again.');
+                              }
+                            }}
+                            className="px-3 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm font-medium"
+                          >
+                            Save
+                          </button>
+                          <button
+                            onClick={() => {
+                              setIsEditingBhagCode(false);
+                              setEditingBhagCode(selectedContact.bhagCode || '');
+                            }}
+                            className="px-3 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors text-sm font-medium"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      ) : (
+                        <p className="text-gray-900 text-base sm:text-lg break-words">
+                          {selectedContact.bhagCode || 'Not assigned'}
+                        </p>
+                      )}
+                    </div>
+                  </div>
                   {(selectedContact.nagarCode || selectedContact.bastiCode) && (
                     <div className="flex items-start">
                       <MapPin className="w-5 h-5 text-indigo-500 mr-3 sm:mr-4 mt-0.5 shrink-0" />

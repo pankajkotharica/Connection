@@ -244,3 +244,4 @@ All endpoints include CORS headers to allow cross-origin requests:
 - `Access-Control-Allow-Methods: GET, POST, OPTIONS`
 - `Access-Control-Allow-Headers: Content-Type`
 
+

@@ -32,8 +32,8 @@ export const authService = {
       throw new Error('Invalid username or password');
     }
 
-    // Check if user is admin (bhag_code is null or empty)
-    const isAdmin = !data.bhag_code || data.bhag_code.trim() === '';
+    // Check if user is admin (username is 'admin')
+    const isAdmin = data.username.toLowerCase() === 'admin';
 
     const user: User = {
       id: data.id,
@@ -56,7 +56,7 @@ export const authService = {
       const user = JSON.parse(userStr) as User;
       // Ensure isAdmin is set correctly for existing sessions
       if (user.isAdmin === undefined) {
-        user.isAdmin = !user.bhagCode || user.bhagCode.trim() === '';
+        user.isAdmin = user.username.toLowerCase() === 'admin';
       }
       return user;
     } catch {

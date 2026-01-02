@@ -37,3 +37,4 @@ The application uses SQLite by default (`organisation.db`). The database will be
 - For production, change the `secret_key` to a secure random string.
 - Consider using password hashing instead of storing plain text passwords.
 
+

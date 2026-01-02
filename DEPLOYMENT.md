@@ -151,3 +151,4 @@ Your environment variables are securely stored in Vercel. To update them:
 - ⚠️ For production, consider adding authentication to restrict database access
 
 
+
