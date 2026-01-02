@@ -6,7 +6,7 @@ import { ContactCard } from './components/ContactCard';
 import { Login } from './components/Login';
 import { contactService } from './services/contactService';
 import { authService, User } from './services/authService';
-import { Plus, Search, X, Phone, MapPin, Users, Briefcase, ArrowLeft, User as UserIcon, Mail, Calendar, ChevronDown, Filter, Trash2, LogOut, Edit2, Save, Shield } from 'lucide-react';
+import { Plus, Search, X, Phone, MapPin, Users, Briefcase, ArrowLeft, User as UserIcon, Mail, Calendar, ChevronDown, Filter, Trash2, LogOut, Edit2, Save, Shield, Download } from 'lucide-react';
 
 const App: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -304,6 +304,96 @@ const App: React.FC = () => {
       return searchFields.every(search => matchesSearch(contact, search.field, search.query));
     });
   }, [contacts, searchFields]);
+
+  // Export filtered contacts to Excel (CSV format)
+  const handleExportToExcel = () => {
+    if (filteredContacts.length === 0) {
+      alert('No data to export.');
+      return;
+    }
+
+    // Define CSV headers
+    const headers = [
+      'Member ID',
+      'Registration Date',
+      'First Name',
+      'Last Name',
+      'Gender',
+      'Address',
+      'City',
+      'BHAG Code',
+      'Email',
+      'Phone',
+      'Age',
+      'Occupation',
+      'Nagar Code',
+      'Basti Code',
+      'Activation',
+      'Activation Date',
+      'Remark',
+      'Referred By'
+    ];
+
+    // Convert contacts to CSV rows
+    const csvRows = [
+      headers.join(','), // Header row
+      ...filteredContacts.map(contact => {
+        // Helper function to escape CSV values
+        const escapeCSV = (value: any): string => {
+          if (value === null || value === undefined) return '';
+          const str = String(value);
+          // If value contains comma, quote, or newline, wrap in quotes and escape quotes
+          if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+            return `"${str.replace(/"/g, '""')}"`;
+          }
+          return str;
+        };
+
+        return [
+          escapeCSV(contact.memberId),
+          escapeCSV(contact.regDate),
+          escapeCSV(contact.firstName),
+          escapeCSV(contact.lastName),
+          escapeCSV(contact.gender),
+          escapeCSV(contact.address),
+          escapeCSV(contact.city),
+          escapeCSV(contact.bhagCode),
+          escapeCSV(contact.email),
+          escapeCSV(contact.phone),
+          escapeCSV(contact.age),
+          escapeCSV(contact.occupation),
+          escapeCSV(contact.nagarCode),
+          escapeCSV(contact.bastiCode),
+          escapeCSV(contact.activation),
+          escapeCSV(contact.activationDt),
+          escapeCSV(contact.remark),
+          escapeCSV(contact.referredBy)
+        ].join(',');
+      })
+    ];
+
+    // Create CSV content
+    const csvContent = csvRows.join('\n');
+
+    // Create blob and download
+    const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' }); // BOM for Excel UTF-8 support
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    
+    // Generate filename with timestamp
+    const timestamp = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+    const filename = `JOIN_RSS_Members_${timestamp}.csv`;
+    
+    link.setAttribute('href', url);
+    link.setAttribute('download', filename);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    // Clean up
+    URL.revokeObjectURL(url);
+  };
 
   // Show login page if not authenticated
   if (!isAuthenticated) {
@@ -742,10 +832,22 @@ const App: React.FC = () => {
           </div>
         ) : (
           <div className="space-y-8">
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-              <div>
-                <h2 className="text-3xl font-bold text-gray-900">Your Connections</h2>
-                <p className="text-gray-500 mt-1">Manage the people you meet and grow your network.</p>
+            <div className="flex flex-col gap-4">
+              <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+                <div className="flex-1">
+                  <h2 className="text-3xl font-bold text-gray-900">Your Connections</h2>
+                  <p className="text-gray-500 mt-1">Manage the people you meet and grow your network.</p>
+                </div>
+                <div className="flex-shrink-0">
+                  <button
+                    onClick={handleExportToExcel}
+                    className="flex items-center justify-center space-x-2 w-full sm:w-auto px-4 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors shadow-sm font-medium min-h-[44px]"
+                    aria-label="Download Excel"
+                  >
+                    <Download className="w-5 h-5" />
+                    <span>Download Excel</span>
+                  </button>
+                </div>
               </div>
               <div className="md:hidden w-full space-y-3">
                 {/* Multiple Mobile Search Fields */}

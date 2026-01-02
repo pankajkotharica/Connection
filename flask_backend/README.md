@@ -38,3 +38,4 @@ The application uses SQLite by default (`organisation.db`). The database will be
 - Consider using password hashing instead of storing plain text passwords.
 
 
+
