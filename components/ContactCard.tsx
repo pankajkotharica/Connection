@@ -44,7 +44,17 @@ export const ContactCard: React.FC<ContactCardProps> = ({ contact, onClick }) =>
           <div className="flex items-center text-sm sm:text-base text-gray-600 min-w-0">
             <MapPin className="w-4 h-4 mr-2 text-gray-400 shrink-0" />
             <span className="truncate">{contact.city || contact.area}</span>
-            {contact.bhagCode && <span className="text-gray-400 ml-1 shrink-0">({contact.bhagCode})</span>}
+            {contact.bhagCode ? (
+              <span className="text-gray-400 ml-1 shrink-0">({contact.bhagCode})</span>
+            ) : (
+              <span className="text-orange-500 ml-1 shrink-0 text-xs font-semibold">(No BHAG)</span>
+            )}
+          </div>
+        )}
+        {!contact.city && !contact.area && !contact.bhagCode && (
+          <div className="flex items-center text-sm sm:text-base text-orange-600 min-w-0">
+            <MapPin className="w-4 h-4 mr-2 text-orange-400 shrink-0" />
+            <span className="truncate font-medium">No BHAG Code Assigned</span>
           </div>
         )}
         {contact.email && (

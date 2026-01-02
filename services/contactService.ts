@@ -14,10 +14,13 @@ export const contactService = {
       .from(TABLE_NAME)
       .select('*');
 
-    // Filter by BHAG code if user is not admin
+    // Admin users see ALL members (including those with blank/null BHAG codes)
+    // Non-admin users only see members matching their BHAG code
     if (!isAdmin && bhagCode) {
       query = query.eq('bhag_code', bhagCode);
     }
+    // Note: When isAdmin is true, no filter is applied, so all members are returned
+    // including those with null/empty bhag_code values
 
     const { data, error } = await query.order('created_at', { ascending: false });
 
