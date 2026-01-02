@@ -530,19 +530,101 @@ const App: React.FC = () => {
                       )}
                     </div>
                   </div>
-                  {(selectedContact.nagarCode || selectedContact.bastiCode) && (
-                    <div className="flex items-start">
-                      <MapPin className="w-5 h-5 text-indigo-500 mr-3 sm:mr-4 mt-0.5 shrink-0" />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs text-gray-400 uppercase font-bold tracking-wider mb-1">Codes</p>
-                        <p className="text-gray-900 text-base sm:text-lg break-words">
-                          {selectedContact.nagarCode && `Nagar: ${selectedContact.nagarCode}`}
-                          {selectedContact.nagarCode && selectedContact.bastiCode && ' | '}
-                          {selectedContact.bastiCode && `Basti: ${selectedContact.bastiCode}`}
-                        </p>
+                  {/* Nagar Code and Basti Code - Editable by BHAG users (non-admin) */}
+                  <div className="flex items-start">
+                    <MapPin className="w-5 h-5 text-indigo-500 mr-3 sm:mr-4 mt-0.5 shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between mb-1">
+                        <p className="text-xs text-gray-400 uppercase font-bold tracking-wider">Codes</p>
+                        {currentUser && !currentUser.isAdmin && !isEditingCodes && (
+                          <button
+                            onClick={() => {
+                              setIsEditingCodes(true);
+                              setEditingNagarCode(selectedContact.nagarCode || '');
+                              setEditingBastiCode(selectedContact.bastiCode || '');
+                            }}
+                            className="text-xs text-indigo-600 hover:text-indigo-700 font-medium"
+                          >
+                            Edit
+                          </button>
+                        )}
                       </div>
+                      {currentUser && !currentUser.isAdmin && isEditingCodes ? (
+                        <div className="space-y-3">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div>
+                              <label className="block text-xs text-gray-600 mb-1 font-medium">Nagar Code</label>
+                              <input
+                                type="text"
+                                placeholder="N001"
+                                className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:bg-white focus:border-indigo-500 transition-all outline-none text-base"
+                                value={editingNagarCode}
+                                onChange={(e) => setEditingNagarCode(e.target.value)}
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-xs text-gray-600 mb-1 font-medium">Basti Code</label>
+                              <input
+                                type="text"
+                                placeholder="B001"
+                                className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:bg-white focus:border-indigo-500 transition-all outline-none text-base"
+                                value={editingBastiCode}
+                                onChange={(e) => setEditingBastiCode(e.target.value)}
+                              />
+                            </div>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <button
+                              onClick={async () => {
+                                try {
+                                  await contactService.update(selectedContact.id, { 
+                                    nagarCode: editingNagarCode,
+                                    bastiCode: editingBastiCode
+                                  });
+                                  const updatedContact = { 
+                                    ...selectedContact, 
+                                    nagarCode: editingNagarCode,
+                                    bastiCode: editingBastiCode
+                                  };
+                                  setSelectedContact(updatedContact);
+                                  setContacts(prev => prev.map(c => c.id === selectedContact.id ? updatedContact : c));
+                                  setIsEditingCodes(false);
+                                } catch (error) {
+                                  console.error('Failed to update codes:', error);
+                                  alert('Failed to update codes. Please try again.');
+                                }
+                              }}
+                              className="px-3 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm font-medium"
+                            >
+                              Save
+                            </button>
+                            <button
+                              onClick={() => {
+                                setIsEditingCodes(false);
+                                setEditingNagarCode(selectedContact.nagarCode || '');
+                                setEditingBastiCode(selectedContact.bastiCode || '');
+                              }}
+                              className="px-3 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors text-sm font-medium"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <p className="text-gray-900 text-base sm:text-lg break-words">
+                          {selectedContact.nagarCode || selectedContact.bastiCode ? (
+                            <>
+                              {selectedContact.nagarCode && `Nagar: ${selectedContact.nagarCode}`}
+                              {selectedContact.nagarCode && selectedContact.bastiCode && ' | '}
+                              {selectedContact.bastiCode && `Basti: ${selectedContact.bastiCode}`}
+                            </>
+                          ) : (
+                            'Not assigned'
+                          )}
+                        </p>
+                      )}
                     </div>
-                  )}
+                  </div>
                   {selectedContact.gender && (
                     <div className="flex items-start">
                       <UserIcon className="w-5 h-5 text-indigo-500 mr-3 sm:mr-4 mt-0.5 shrink-0" />
