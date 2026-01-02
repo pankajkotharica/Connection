@@ -68,6 +68,15 @@ const App: React.FC = () => {
     referredBy: '',
   });
 
+  // Auto-set BHAG code for non-admin users when form opens
+  useEffect(() => {
+    if (isFormOpen && currentUser && !currentUser.isAdmin && currentUser.bhagCode) {
+      setFormData(prev => ({ ...prev, bhagCode: currentUser.bhagCode || '' }));
+    } else if (isFormOpen && currentUser?.isAdmin) {
+      setFormData(prev => ({ ...prev, bhagCode: '' }));
+    }
+  }, [isFormOpen, currentUser]);
+
   // Load contacts from Supabase (filtered by user's BHAG code if not admin)
   useEffect(() => {
     const loadContacts = async () => {
