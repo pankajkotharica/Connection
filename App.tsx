@@ -6,7 +6,7 @@ import { ContactCard } from './components/ContactCard';
 import { Login } from './components/Login';
 import { contactService } from './services/contactService';
 import { authService, User } from './services/authService';
-import { Plus, Search, X, Phone, MapPin, Users, Briefcase, ArrowLeft, User as UserIcon, Mail, Calendar, ChevronDown, Filter, LogOut, Edit2, Save, Shield } from 'lucide-react';
+import { Plus, Search, X, Phone, MapPin, Users, Briefcase, ArrowLeft, User as UserIcon, Mail, Calendar, ChevronDown, Filter, Trash2, LogOut, Edit2, Save, Shield } from 'lucide-react';
 
 const App: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
