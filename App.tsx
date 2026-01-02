@@ -4,13 +4,14 @@ import { Contact } from './types';
 import { Button } from './components/Button';
 import { ContactCard } from './components/ContactCard';
 import { contactService } from './services/contactService';
-import { Plus, Search, X, Phone, MapPin, Users, Briefcase, ArrowLeft, User, Mail, Calendar } from 'lucide-react';
+import { Plus, Search, X, Phone, MapPin, Users, Briefcase, ArrowLeft, User, Mail, Calendar, ChevronDown, Filter } from 'lucide-react';
 
 const App: React.FC = () => {
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [searchField, setSearchField] = useState<string>('all');
   const [isLoadingContacts, setIsLoadingContacts] = useState(true);
 
   // Form State
@@ -109,15 +110,73 @@ const App: React.FC = () => {
     if (!query) return contacts;
 
     const fullName = (c: Contact) => `${c.firstName || ''} ${c.lastName || ''}`.trim().toLowerCase();
-    return contacts.filter(c => 
-      fullName(c).includes(query) || 
-      (c.occupation || c.profession || '').toLowerCase().includes(query) ||
-      (c.city || c.area || '').toLowerCase().includes(query) ||
-      (c.referredBy || '').toLowerCase().includes(query) ||
-      (c.phone || c.contactNumber || '').toLowerCase().includes(query) ||
-      (c.email || '').toLowerCase().includes(query)
-    );
-  }, [contacts, searchQuery]);
+    
+    return contacts.filter(c => {
+      if (searchField === 'all') {
+        // Search in all fields
+        return (
+          fullName(c).includes(query) ||
+          (c.firstName || '').toLowerCase().includes(query) ||
+          (c.lastName || '').toLowerCase().includes(query) ||
+          (c.memberId || '').toLowerCase().includes(query) ||
+          (c.occupation || c.profession || '').toLowerCase().includes(query) ||
+          (c.city || c.area || '').toLowerCase().includes(query) ||
+          (c.referredBy || '').toLowerCase().includes(query) ||
+          (c.phone || c.contactNumber || '').toLowerCase().includes(query) ||
+          (c.email || '').toLowerCase().includes(query) ||
+          (c.gender || '').toLowerCase().includes(query) ||
+          (c.address || '').toLowerCase().includes(query) ||
+          (c.bhagCode || '').toLowerCase().includes(query) ||
+          (c.nagarCode || '').toLowerCase().includes(query) ||
+          (c.bastiCode || '').toLowerCase().includes(query) ||
+          (c.activation || '').toLowerCase().includes(query) ||
+          (c.remark || c.notes || '').toLowerCase().includes(query) ||
+          (c.age?.toString() || '').includes(query) ||
+          (c.regDate || '').toLowerCase().includes(query)
+        );
+      } else {
+        // Search in specific field
+        switch (searchField) {
+          case 'name':
+            return fullName(c).includes(query) || 
+                   (c.firstName || '').toLowerCase().includes(query) ||
+                   (c.lastName || '').toLowerCase().includes(query);
+          case 'memberId':
+            return (c.memberId || '').toLowerCase().includes(query);
+          case 'phone':
+            return (c.phone || c.contactNumber || '').toLowerCase().includes(query);
+          case 'email':
+            return (c.email || '').toLowerCase().includes(query);
+          case 'occupation':
+            return (c.occupation || c.profession || '').toLowerCase().includes(query);
+          case 'city':
+            return (c.city || c.area || '').toLowerCase().includes(query);
+          case 'address':
+            return (c.address || '').toLowerCase().includes(query);
+          case 'bhagCode':
+            return (c.bhagCode || '').toLowerCase().includes(query);
+          case 'nagarCode':
+            return (c.nagarCode || '').toLowerCase().includes(query);
+          case 'bastiCode':
+            return (c.bastiCode || '').toLowerCase().includes(query);
+          case 'gender':
+            return (c.gender || '').toLowerCase().includes(query);
+          case 'age':
+            return (c.age?.toString() || '').includes(query);
+          case 'activation':
+            return (c.activation || '').toLowerCase().includes(query);
+          case 'referredBy':
+            return (c.referredBy || '').toLowerCase().includes(query);
+          case 'remark':
+            return (c.remark || c.notes || '').toLowerCase().includes(query);
+          case 'regDate':
+            return (c.regDate || '').toLowerCase().includes(query);
+          default:
+            return true;
+        }
+      }
+    });
+  }, [contacts, searchQuery, searchField]);
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -132,24 +191,63 @@ const App: React.FC = () => {
           </div>
           
           <div className="flex-1 max-w-xl flex items-center space-x-2 sm:space-x-4">
-            <div className="relative flex-1 hidden md:block group">
-              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-indigo-500 transition-colors" />
-              <input 
-                type="text" 
-                placeholder="Search by name, profession, area or referral..." 
-                className="w-full pl-10 pr-10 py-2.5 bg-gray-100 border-transparent focus:bg-white border focus:border-indigo-500 rounded-full text-base outline-none transition-all"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-              {searchQuery && (
-                <button 
-                  onClick={() => setSearchQuery('')}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1"
-                  aria-label="Clear search"
+            <div className="relative flex-1 hidden md:flex items-center space-x-2">
+              {/* Search Field Selector */}
+              <div className="relative">
+                <select
+                  value={searchField}
+                  onChange={(e) => setSearchField(e.target.value)}
+                  className="appearance-none bg-gray-100 hover:bg-gray-200 border-transparent focus:bg-white border focus:border-indigo-500 rounded-full px-4 py-2.5 pr-8 text-sm font-medium text-gray-700 outline-none transition-all cursor-pointer min-w-[120px]"
                 >
-                  <X className="w-4 h-4" />
-                </button>
-              )}
+                  <option value="all">All Fields</option>
+                  <option value="name">Name</option>
+                  <option value="memberId">Member ID</option>
+                  <option value="phone">Phone</option>
+                  <option value="email">Email</option>
+                  <option value="occupation">Occupation</option>
+                  <option value="city">City</option>
+                  <option value="address">Address</option>
+                  <option value="bhagCode">BHAG Code</option>
+                  <option value="nagarCode">Nagar Code</option>
+                  <option value="bastiCode">Basti Code</option>
+                  <option value="gender">Gender</option>
+                  <option value="age">Age</option>
+                  <option value="activation">Activation</option>
+                  <option value="referredBy">Referred By</option>
+                  <option value="remark">Remark</option>
+                  <option value="regDate">Reg Date</option>
+                </select>
+                <ChevronDown className="w-4 h-4 absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
+              </div>
+              
+              {/* Search Input */}
+              <div className="relative flex-1 group">
+                <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-indigo-500 transition-colors" />
+                <input 
+                  type="text" 
+                  placeholder={searchField === 'all' 
+                    ? "Search in all fields..." 
+                    : `Search by ${searchField === 'memberId' ? 'Member ID' : 
+                          searchField === 'bhagCode' ? 'BHAG Code' : 
+                          searchField === 'nagarCode' ? 'Nagar Code' : 
+                          searchField === 'bastiCode' ? 'Basti Code' : 
+                          searchField === 'referredBy' ? 'Referred By' :
+                          searchField === 'regDate' ? 'Registration Date' :
+                          searchField}...`}
+                  className="w-full pl-10 pr-10 py-2.5 bg-gray-100 border-transparent focus:bg-white border focus:border-indigo-500 rounded-full text-base outline-none transition-all"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+                {searchQuery && (
+                  <button 
+                    onClick={() => setSearchQuery('')}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1"
+                    aria-label="Clear search"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
             </div>
             <Button onClick={() => setIsFormOpen(true)} className="shrink-0 !bg-red-600 hover:!bg-red-700 min-h-[44px] px-4 sm:px-4">
               <Plus className="w-5 h-5 sm:w-4 sm:h-4 sm:mr-2" />
@@ -295,12 +393,50 @@ const App: React.FC = () => {
                 <h2 className="text-3xl font-bold text-gray-900">Your Connections</h2>
                 <p className="text-gray-500 mt-1">Manage the people you meet and grow your network.</p>
               </div>
-              <div className="md:hidden w-full">
+              <div className="md:hidden w-full space-y-3">
+                {/* Mobile Search Field Selector */}
+                <div className="relative">
+                  <Filter className="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                  <select
+                    value={searchField}
+                    onChange={(e) => setSearchField(e.target.value)}
+                    className="w-full pl-12 pr-10 py-3.5 bg-white border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 rounded-xl text-base outline-none transition-all shadow-sm appearance-none"
+                  >
+                    <option value="all">All Fields</option>
+                    <option value="name">Name</option>
+                    <option value="memberId">Member ID</option>
+                    <option value="phone">Phone</option>
+                    <option value="email">Email</option>
+                    <option value="occupation">Occupation</option>
+                    <option value="city">City</option>
+                    <option value="address">Address</option>
+                    <option value="bhagCode">BHAG Code</option>
+                    <option value="nagarCode">Nagar Code</option>
+                    <option value="bastiCode">Basti Code</option>
+                    <option value="gender">Gender</option>
+                    <option value="age">Age</option>
+                    <option value="activation">Activation</option>
+                    <option value="referredBy">Referred By</option>
+                    <option value="remark">Remark</option>
+                    <option value="regDate">Reg Date</option>
+                  </select>
+                  <ChevronDown className="w-4 h-4 absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
+                </div>
+                
+                {/* Mobile Search Input */}
                 <div className="relative group">
                   <Search className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-indigo-500" />
                   <input 
                     type="text" 
-                    placeholder="Search name, job, area..." 
+                    placeholder={searchField === 'all' 
+                      ? "Search in all fields..." 
+                      : `Search by ${searchField === 'memberId' ? 'Member ID' : 
+                            searchField === 'bhagCode' ? 'BHAG Code' : 
+                            searchField === 'nagarCode' ? 'Nagar Code' : 
+                            searchField === 'bastiCode' ? 'Basti Code' : 
+                            searchField === 'referredBy' ? 'Referred By' :
+                            searchField === 'regDate' ? 'Registration Date' :
+                            searchField}...`}
                     className="w-full pl-12 pr-12 py-3.5 bg-white border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 rounded-xl text-base outline-none transition-all shadow-sm"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
