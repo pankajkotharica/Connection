@@ -101,15 +101,6 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
               {isLoading ? 'Logging in...' : 'Login'}
             </Button>
           </form>
-
-          {/* Test Credentials Info */}
-          <div className="mt-6 p-4 bg-gray-50 rounded-xl border border-gray-200">
-            <p className="text-xs text-gray-600 text-center">
-              <strong>Test Credentials:</strong><br />
-              Username: <code className="bg-white px-1.5 py-0.5 rounded">admin_b01</code><br />
-              Password: <code className="bg-white px-1.5 py-0.5 rounded">password123</code>
-            </p>
-          </div>
         </div>
       </div>
     </div>
