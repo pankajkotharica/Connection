@@ -819,14 +819,162 @@ const App: React.FC = () => {
                 <p className="text-sm sm:text-base text-gray-500">Fetching your connections from the database.</p>
               </div>
             ) : filteredContacts.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
-                {filteredContacts.map(contact => (
-                  <ContactCard 
-                    key={contact.id} 
-                    contact={contact} 
-                    onClick={handleContactClick}
-                  />
-                ))}
+              <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-gray-50 border-b border-gray-200">
+                      <tr>
+                        <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Member ID</th>
+                        <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Name</th>
+                        <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Phone</th>
+                        <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Email</th>
+                        <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                          BHAG Code {currentUser?.isAdmin && <Shield className="inline-block w-3 h-3 text-indigo-600 ml-1" />}
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">City</th>
+                        <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Occupation</th>
+                        <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Nagar</th>
+                        <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Basti</th>
+                        <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {filteredContacts.map(contact => (
+                        <tr 
+                          key={contact.id} 
+                          className="hover:bg-gray-50 transition-colors cursor-pointer"
+                          onClick={() => handleContactClick(contact)}
+                        >
+                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                            {contact.memberId || '-'}
+                          </td>
+                          <td className="px-4 py-3 whitespace-nowrap">
+                            <div className="text-sm font-medium text-gray-900">
+                              {contact.firstName && contact.lastName 
+                                ? `${contact.firstName} ${contact.lastName}`
+                                : contact.name || 'Unknown'}
+                            </div>
+                          </td>
+                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                            {contact.phone || contact.contactNumber || '-'}
+                          </td>
+                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                            {contact.email || '-'}
+                          </td>
+                          <td className="px-4 py-3 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+                            {currentUser?.isAdmin && editingBhagCodeId === contact.id ? (
+                              <div className="flex items-center space-x-2">
+                                <select
+                                  className="px-2 py-1.5 text-sm border-2 border-indigo-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none bg-white"
+                                  value={editingBhagCode}
+                                  onChange={(e) => setEditingBhagCode(e.target.value)}
+                                  onClick={(e) => e.stopPropagation()}
+                                  autoFocus
+                                >
+                                  <option value="">Select BHAG</option>
+                                  <option value="MOHITE">MOHITE</option>
+                                  <option value="ITWARI">ITWARI</option>
+                                  <option value="LALGANJ">LALGANJ</option>
+                                  <option value="BINAKI">BINAKI</option>
+                                  <option value="SADAR">SADAR</option>
+                                  <option value="GITTIKHADAN">GITTIKHADAN</option>
+                                  <option value="DHARAMPETH">DHARAMPETH</option>
+                                  <option value="TRIMURTI">TRIMURTI</option>
+                                  <option value="SOMALWADA">SOMALWADA</option>
+                                  <option value="AJNI">AJNI</option>
+                                  <option value="AYODHYA">AYODHYA</option>
+                                  <option value="NANDANVAN">NANDANVAN</option>
+                                  <option value="RAMTEK VIBHAG">RAMTEK VIBHAG</option>
+                                  <option value="OTHER">OTHER</option>
+                                </select>
+                                <button
+                                  onClick={async (e) => {
+                                    e.stopPropagation();
+                                    try {
+                                      await contactService.update(contact.id, { bhagCode: editingBhagCode });
+                                      const updatedContact = { ...contact, bhagCode: editingBhagCode };
+                                      setContacts(prev => prev.map(c => c.id === contact.id ? updatedContact : c));
+                                      setEditingBhagCodeId(null);
+                                      setEditingBhagCode('');
+                                    } catch (error) {
+                                      console.error('Failed to update BHAG code:', error);
+                                      alert('Failed to update BHAG code. Please try again.');
+                                    }
+                                  }}
+                                  className="px-2 py-1 bg-indigo-600 text-white text-xs rounded hover:bg-indigo-700"
+                                >
+                                  <Save className="w-3 h-3" />
+                                </button>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setEditingBhagCodeId(null);
+                                    setEditingBhagCode('');
+                                  }}
+                                  className="px-2 py-1 bg-gray-200 text-gray-700 text-xs rounded hover:bg-gray-300"
+                                >
+                                  <X className="w-3 h-3" />
+                                </button>
+                              </div>
+                            ) : (
+                              <div 
+                                className="flex items-center space-x-2 group"
+                                onDoubleClick={(e) => {
+                                  if (currentUser?.isAdmin) {
+                                    e.stopPropagation();
+                                    setEditingBhagCodeId(contact.id);
+                                    setEditingBhagCode(contact.bhagCode || '');
+                                  }
+                                }}
+                              >
+                                <span className={`text-sm font-medium ${
+                                  contact.bhagCode 
+                                    ? 'text-gray-900' 
+                                    : 'text-orange-600 font-semibold'
+                                }`}>
+                                  {contact.bhagCode || 'No BHAG'}
+                                </span>
+                                {currentUser?.isAdmin && (
+                                  <Edit2 
+                                    className="w-3 h-3 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setEditingBhagCodeId(contact.id);
+                                      setEditingBhagCode(contact.bhagCode || '');
+                                    }}
+                                  />
+                                )}
+                              </div>
+                            )}
+                          </td>
+                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                            {contact.city || contact.area || '-'}
+                          </td>
+                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                            {contact.occupation || contact.profession || '-'}
+                          </td>
+                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                            {contact.nagarCode || '-'}
+                          </td>
+                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                            {contact.bastiCode || '-'}
+                          </td>
+                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500" onClick={(e) => e.stopPropagation()}>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleContactClick(contact);
+                              }}
+                              className="text-indigo-600 hover:text-indigo-900 font-medium"
+                            >
+                              View
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             ) : (
               <div className="bg-white border-2 border-dashed border-gray-200 rounded-2xl sm:rounded-3xl p-8 sm:p-12 md:p-16 text-center">
