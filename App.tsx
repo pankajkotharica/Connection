@@ -788,13 +788,30 @@ const App: React.FC = () => {
                   </div>
                   <div>
                     <label className="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wider">BHAG Code</label>
-                    <input 
-                      type="text" 
-                      placeholder="B01"
-                      className="w-full px-4 py-3.5 sm:py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:bg-white focus:border-indigo-500 transition-all outline-none text-base"
-                      value={formData.bhagCode || ''}
-                      onChange={e => setFormData(prev => ({...prev, bhagCode: e.target.value}))}
-                    />
+                    <div className="relative group">
+                      <select
+                        className="w-full px-4 py-3.5 sm:py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:bg-white focus:border-indigo-500 transition-all outline-none text-base appearance-none pr-10"
+                        value={formData.bhagCode || ''}
+                        onChange={e => setFormData(prev => ({...prev, bhagCode: e.target.value}))}
+                      >
+                        <option value="">Select BHAG Code</option>
+                        <option value="MOHITE">MOHITE</option>
+                        <option value="ITWARI">ITWARI</option>
+                        <option value="LALGANJ">LALGANJ</option>
+                        <option value="BINAKI">BINAKI</option>
+                        <option value="SADAR">SADAR</option>
+                        <option value="GITTIKHADAN">GITTIKHADAN</option>
+                        <option value="DHARAMPETH">DHARAMPETH</option>
+                        <option value="TRIMURTI">TRIMURTI</option>
+                        <option value="SOMALWADA">SOMALWADA</option>
+                        <option value="AJNI">AJNI</option>
+                        <option value="AYODHYA">AYODHYA</option>
+                        <option value="NANDANVAN">NANDANVAN</option>
+                        <option value="RAMTEK VIBHAG">RAMTEK VIBHAG</option>
+                        <option value="OTHER">OTHER</option>
+                      </select>
+                      <ChevronDown className="w-5 h-5 absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                    </div>
                   </div>
                 </div>
 
