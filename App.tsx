@@ -146,6 +146,7 @@ const App: React.FC = () => {
 
   const handleContactClick = (contact: Contact) => {
     setSelectedContact(contact);
+    setIsEditingBhagCode(false);
   };
 
   // Add a new search field
