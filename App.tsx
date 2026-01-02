@@ -962,11 +962,123 @@ const App: React.FC = () => {
                           <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
                             {contact.occupation || contact.profession || '-'}
                           </td>
-                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
-                            {contact.nagarCode || '-'}
+                          <td className="px-4 py-3 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+                            {currentUser && !currentUser.isAdmin && editingCodesId === contact.id ? (
+                              <input
+                                type="text"
+                                placeholder="N001"
+                                className="w-20 px-2 py-1.5 text-sm border-2 border-indigo-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none bg-white"
+                                value={editingTableNagarCode}
+                                onChange={(e) => setEditingTableNagarCode(e.target.value)}
+                                onClick={(e) => e.stopPropagation()}
+                                autoFocus
+                              />
+                            ) : (
+                              <div 
+                                className="flex items-center space-x-2 group"
+                                onDoubleClick={(e) => {
+                                  if (currentUser && !currentUser.isAdmin) {
+                                    e.stopPropagation();
+                                    setEditingCodesId(contact.id);
+                                    setEditingTableNagarCode(contact.nagarCode || '');
+                                    setEditingTableBastiCode(contact.bastiCode || '');
+                                  }
+                                }}
+                              >
+                                <span className="text-sm text-gray-900">
+                                  {contact.nagarCode || '-'}
+                                </span>
+                                {currentUser && !currentUser.isAdmin && (
+                                  <Edit2 
+                                    className="w-3 h-3 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setEditingCodesId(contact.id);
+                                      setEditingTableNagarCode(contact.nagarCode || '');
+                                      setEditingTableBastiCode(contact.bastiCode || '');
+                                    }}
+                                  />
+                                )}
+                              </div>
+                            )}
                           </td>
-                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
-                            {contact.bastiCode || '-'}
+                          <td className="px-4 py-3 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+                            {currentUser && !currentUser.isAdmin && editingCodesId === contact.id ? (
+                              <div className="flex items-center space-x-2">
+                                <input
+                                  type="text"
+                                  placeholder="B001"
+                                  className="w-20 px-2 py-1.5 text-sm border-2 border-indigo-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none bg-white"
+                                  value={editingTableBastiCode}
+                                  onChange={(e) => setEditingTableBastiCode(e.target.value)}
+                                  onClick={(e) => e.stopPropagation()}
+                                />
+                                <button
+                                  onClick={async (e) => {
+                                    e.stopPropagation();
+                                    try {
+                                      await contactService.update(contact.id, { 
+                                        nagarCode: editingTableNagarCode,
+                                        bastiCode: editingTableBastiCode
+                                      });
+                                      const updatedContact = { 
+                                        ...contact, 
+                                        nagarCode: editingTableNagarCode,
+                                        bastiCode: editingTableBastiCode
+                                      };
+                                      setContacts(prev => prev.map(c => c.id === contact.id ? updatedContact : c));
+                                      setEditingCodesId(null);
+                                      setEditingTableNagarCode('');
+                                      setEditingTableBastiCode('');
+                                    } catch (error) {
+                                      console.error('Failed to update codes:', error);
+                                      alert('Failed to update codes. Please try again.');
+                                    }
+                                  }}
+                                  className="px-2 py-1 bg-indigo-600 text-white text-xs rounded hover:bg-indigo-700"
+                                >
+                                  <Save className="w-3 h-3" />
+                                </button>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setEditingCodesId(null);
+                                    setEditingTableNagarCode('');
+                                    setEditingTableBastiCode('');
+                                  }}
+                                  className="px-2 py-1 bg-gray-200 text-gray-700 text-xs rounded hover:bg-gray-300"
+                                >
+                                  <X className="w-3 h-3" />
+                                </button>
+                              </div>
+                            ) : (
+                              <div 
+                                className="flex items-center space-x-2 group"
+                                onDoubleClick={(e) => {
+                                  if (currentUser && !currentUser.isAdmin) {
+                                    e.stopPropagation();
+                                    setEditingCodesId(contact.id);
+                                    setEditingTableNagarCode(contact.nagarCode || '');
+                                    setEditingTableBastiCode(contact.bastiCode || '');
+                                  }
+                                }}
+                              >
+                                <span className="text-sm text-gray-900">
+                                  {contact.bastiCode || '-'}
+                                </span>
+                                {currentUser && !currentUser.isAdmin && (
+                                  <Edit2 
+                                    className="w-3 h-3 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setEditingCodesId(contact.id);
+                                      setEditingTableNagarCode(contact.nagarCode || '');
+                                      setEditingTableBastiCode(contact.bastiCode || '');
+                                    }}
+                                  />
+                                )}
+                              </div>
+                            )}
                           </td>
                           <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500" onClick={(e) => e.stopPropagation()}>
                             <button
