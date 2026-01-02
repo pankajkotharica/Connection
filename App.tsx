@@ -20,6 +20,7 @@ const App: React.FC = () => {
   const [isLoadingContacts, setIsLoadingContacts] = useState(true);
   const [isEditingBhagCode, setIsEditingBhagCode] = useState(false);
   const [editingBhagCode, setEditingBhagCode] = useState<string>('');
+  const [editingBhagCodeId, setEditingBhagCodeId] = useState<string | null>(null);
   const [isEditingCodes, setIsEditingCodes] = useState(false);
   const [editingNagarCode, setEditingNagarCode] = useState<string>('');
   const [editingBastiCode, setEditingBastiCode] = useState<string>('');
