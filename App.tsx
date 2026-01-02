@@ -831,6 +831,7 @@ const App: React.FC = () => {
                         <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
                           BHAG Code {currentUser?.isAdmin && <Shield className="inline-block w-3 h-3 text-indigo-600 ml-1" />}
                         </th>
+                        <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Address</th>
                         <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">City</th>
                         <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Occupation</th>
                         <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Nagar</th>
@@ -946,6 +947,11 @@ const App: React.FC = () => {
                                 )}
                               </div>
                             )}
+                          </td>
+                          <td className="px-4 py-3 text-sm text-gray-900 max-w-xs">
+                            <div className="truncate" title={contact.address || undefined}>
+                              {contact.address || '-'}
+                            </div>
                           </td>
                           <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
                             {contact.city || contact.area || '-'}
