@@ -24,6 +24,9 @@ const App: React.FC = () => {
   const [isEditingCodes, setIsEditingCodes] = useState(false);
   const [editingNagarCode, setEditingNagarCode] = useState<string>('');
   const [editingBastiCode, setEditingBastiCode] = useState<string>('');
+  const [editingCodesId, setEditingCodesId] = useState<string | null>(null);
+  const [editingTableNagarCode, setEditingTableNagarCode] = useState<string>('');
+  const [editingTableBastiCode, setEditingTableBastiCode] = useState<string>('');
 
   // Check authentication on mount
   useEffect(() => {
